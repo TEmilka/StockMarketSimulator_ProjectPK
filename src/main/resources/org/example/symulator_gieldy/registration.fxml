@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" style="-fx-border-radius: 5; -fx-border-color: #cccccc; -fx-border-width: 2; -fx-background-color: #ffffff;" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.symulator_gieldy.RegistrationController">
+   <children>
+      <PasswordField fx:id="passwordField" layoutX="163.0" layoutY="181.0" prefHeight="38.0" prefWidth="278.0" promptText="Password" style="-fx-background-color: rgba(255,204,204,0.5); -fx-border-color: #996699;">
+         <font>
+            <Font name="Fira Code Regular" size="16.0" />
+         </font></PasswordField>
+      <PasswordField fx:id="checkPasswordField" layoutX="163.0" layoutY="235.0" prefHeight="38.0" prefWidth="278.0" promptText="Confirm password" style="-fx-background-color: rgba(255,204,204,0.5); -fx-border-color: #996699;">
+         <font>
+            <Font name="Fira Code Retina" size="16.0" />
+         </font></PasswordField>
+      <Button layoutX="228.0" layoutY="302.0" mnemonicParsing="false" onAction="#handleRegisterButton" prefHeight="31.0" prefWidth="144.0" style="-fx-background-color: #ffcccc; -fx-border-color: #663366; -fx-border-radius: 15; -fx-background-radius: 15;" text="CONFIRM" textFill="#663366">
+         <font>
+            <Font name="Fira Code Retina" size="18.0" />
+         </font>
+         <cursor>
+            <Cursor fx:constant="HAND" />
+         </cursor></Button>
+      <TextField fx:id="usernameField" layoutX="163.0" layoutY="127.0" prefHeight="38.0" prefWidth="278.0" promptText="Username" style="-fx-background-color: rgba(255,204,204,0.5); -fx-border-color: #996699;">
+         <font>
+            <Font name="Fira Code Retina" size="16.0" />
+         </font></TextField>
+      <Label alignment="BASELINE_CENTER" contentDisplay="TOP" layoutX="164.0" layoutY="44.0" prefHeight="54.0" prefWidth="278.0" text="Zarejestruj się!" textAlignment="CENTER" textFill="#663366" textOverrun="CENTER_ELLIPSIS">
+         <font>
+            <Font name="Fira Code Retina" size="27.0" />
+         </font></Label>
+   </children>
+   <cursor>
+      <Cursor fx:constant="HAND" />
+   </cursor>
+</AnchorPane>

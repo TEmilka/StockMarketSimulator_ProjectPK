@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.chart.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.*?>
+
+<TitledPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="720.0" prefWidth="1149.0" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.symulator_gieldy.MainController">
+   <content>
+      <SplitPane dividerPositions="0.28596338273757627" prefHeight="160.0" prefWidth="1274.0">
+        <items>
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+               <children>
+                  <ChoiceBox layoutX="59.0" layoutY="27.0" prefHeight="25.0" prefWidth="207.0" />
+                  <Label fx:id="usernameLabel" layoutX="14.0" layoutY="651.0" prefHeight="29.0" prefWidth="149.0" style="-fx-background-color: #ffcccc; -fx-alignment: center; -fx-border-radius: 10; -fx-background-radius: 10; -fx-border-color: #ff99cc;" text="Username" textAlignment="CENTER" textFill="#996699">
+                     <font>
+                        <Font name="Fira Code Retina" size="16.0" />
+                     </font></Label>
+                  <ListView fx:id="assetsListView" layoutX="13.0" layoutY="58.0" prefHeight="537.0" prefWidth="298.0" style="-fx-background-color: rgba(202,187,187,0.58);" />
+               </children></AnchorPane>
+          <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="694.0" prefWidth="755.0">
+               <children>
+                  <LineChart layoutX="113.0" layoutY="32.0" prefHeight="477.0" prefWidth="669.0" style="-fx-background-color: rgba(202,187,187,0.58);">
+                    <xAxis>
+                      <CategoryAxis side="BOTTOM" />
+                    </xAxis>
+                    <yAxis>
+                      <NumberAxis side="LEFT" />
+                    </yAxis>
+                  </LineChart>
+                  <Button layoutX="23.0" layoutY="195.0" mnemonicParsing="false" prefHeight="28.0" prefWidth="81.0" style="-fx-background-color: #ffcccc; -fx-border-radius: 10; -fx-background-radius: 10; -fx-border-color: #ff99cc;" text="Sell" textFill="#996699">
+                     <font>
+                        <Font name="Fira Code Retina" size="13.0" />
+                     </font></Button>
+                  <Button layoutX="23.0" layoutY="235.0" mnemonicParsing="false" prefHeight="28.0" prefWidth="81.0" style="-fx-background-color: #ffcccc; -fx-border-radius: 10; -fx-background-radius: 10; -fx-border-color: #ff99cc;" text="Buy" textFill="#996699">
+                     <font>
+                        <Font name="Fira Code Retina" size="13.0" />
+                     </font></Button>
+                  <Label fx:id="Balance" layoutX="650.0" layoutY="621.0" prefHeight="25.0" prefWidth="140.0" style="-fx-background-color: #ffcccc; -fx-background-radius: 5; -fx-border-color: #ff99cc; -fx-border-radius: 5;" text="Balance" textFill="#996699">
+                     <font>
+                        <Font name="Fira Code Retina" size="13.0" />
+                     </font></Label>
+                  <Label fx:id="Profit" layoutX="14.0" layoutY="622.0" prefHeight="25.0" prefWidth="140.0" style="-fx-background-color: #ffcccc; -fx-background-radius: 5; -fx-border-color: #ff99cc; -fx-border-radius: 5;" text="Profit" textFill="#996699">
+                     <font>
+                        <Font name="Fira Code Retina" size="13.0" />
+                     </font></Label>
+                  <Label fx:id="Value" layoutX="166.0" layoutY="620.0" prefHeight="25.0" prefWidth="140.0" style="-fx-background-color: #ffcccc; -fx-background-radius: 5; -fx-border-color: #ff99cc; -fx-border-radius: 5;" text="Value" textFill="#996699">
+                     <font>
+                        <Font name="Fira Code Retina" size="13.0" />
+                     </font></Label>
+                  <Label layoutX="394.0" layoutY="509.0" text="Nazwa aktywa" />
+               </children></AnchorPane>
+        </items>
+      </SplitPane>
+   </content>
+</TitledPane>
