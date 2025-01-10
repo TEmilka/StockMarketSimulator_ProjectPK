@@ -11,6 +11,7 @@ module org.example.symulator_gieldy {
     requires eu.hansolo.tilesfx;
     requires com.almasb.fxgl.all;
     requires java.desktop;
+    requires java.sql;
 
     opens org.example.symulator_gieldy to javafx.fxml;
     exports org.example.symulator_gieldy;

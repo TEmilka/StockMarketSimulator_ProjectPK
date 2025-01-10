@@ -10,7 +10,6 @@ import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
 import org.example.symulator_gieldy.User.User;
-import org.example.symulator_gieldy.User.UsersList;
 
 import java.io.IOException;
 
@@ -33,6 +32,11 @@ public class RegistrationController {
             alert.showAndWait();
             return;
         }
+        if (password1.length() <= 8) {
+            alert.setContentText("Hasło musi mieć co najmniej 8 znaków.");
+            alert.showAndWait();
+            return;
+        }
         if (!password1.equals(password2)) {
             alert.setContentText("Hasła muszą być takie same!");
             alert.showAndWait();
@@ -40,17 +44,13 @@ public class RegistrationController {
         }
 
         User user = new User(username, password1);
-        UsersList.getInstance().add(user);
 
         try {
-            // Załaduj plik FXML dla strony logowania
+            User.saveUser(user);
+
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("login.fxml"));
             Parent root = fxmlLoader.load();
-
-            // Pobierz obecne okno (Stage) z przycisku
             Stage stage = (Stage) usernameField.getScene().getWindow();
-
-            // Ustaw nową scenę
             stage.setScene(new Scene(root));
             stage.show();
 
@@ -59,8 +59,30 @@ public class RegistrationController {
             alert.setAlertType(Alert.AlertType.ERROR);
             alert.setContentText("Błąd ładowania strony logowania.");
             alert.showAndWait();
+        } catch (Exception e) {
+            e.printStackTrace();
+            alert.setAlertType(Alert.AlertType.ERROR);
+            alert.setContentText("Błąd podczas rejestracji użytkownika.");
+            alert.showAndWait();
         }
-
-
+    }
+    public void handleToLogin(ActionEvent actionEvent) {
+        try {
+            FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("login.fxml"));
+            Parent root = fxmlLoader.load();
+            Stage stage = (Stage) usernameField.getScene().getWindow();
+            stage.setScene(new Scene(root));
+            stage.show();
+        } catch (IOException e) {
+            e.printStackTrace();
+            alert.setAlertType(Alert.AlertType.ERROR);
+            alert.setContentText("Błąd ładowania strony logowania.");
+            alert.showAndWait();
+        } catch (Exception e) {
+            e.printStackTrace();
+            alert.setAlertType(Alert.AlertType.ERROR);
+            alert.setContentText("Błąd podczas rejestracji użytkownika.");
+            alert.showAndWait();
+        }
     }
 }

@@ -1,13 +1,10 @@
 package org.example.symulator_gieldy.Assets;
 
 public class AssetStocks extends Asset {
-
-    String isin;
     AssetState state;
 
     public AssetStocks(String name, double price, String isin) {
-        super(name, price);
-        this.isin = isin;
+        super(name,price,isin);
         this.symbol = "[STOCK]";
         historyPrices.add(price);
     }
