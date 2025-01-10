@@ -17,4 +17,8 @@ public class SessionUser {
     public static boolean isLoggedIn() {
         return loggedInUser != null;
     }
+
+    public static void logout() {
+        loggedInUser = null;
+    }
 }

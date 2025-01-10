@@ -71,7 +71,6 @@ public class Stock {
             }
         }
     }
-
     public void saveMarketAssetsToDatabase() {
         String insertMarketAssetSQL = "INSERT INTO market_assets (symbol, name, price, isin) VALUES (?, ?, ?, ?)";
         String insertAssetPriceSQL = "INSERT INTO asset_prices (asset_id, price) VALUES (?, ?)";
@@ -159,4 +158,5 @@ public class Stock {
         }
         return priceHistoryList;
     }
+
 }

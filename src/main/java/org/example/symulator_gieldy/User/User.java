@@ -76,7 +76,7 @@ public class User {
                         try (PreparedStatement assetStmt = connection.prepareStatement(insertAssetSQL)) {
                             assetStmt.setInt(1, walletId);
                             assetStmt.setInt(2, assetId);
-                            assetStmt.setDouble(3, quantity);
+                            assetStmt.setDouble(3, 0);
                             assetStmt.executeUpdate();
                         }
                     }
@@ -100,7 +100,6 @@ public class User {
         }
         return -1; // Aktywo nie istnieje
     }
-
     public static Wallet getUserWallet(String username) {
         String userQuery = "SELECT id FROM users WHERE username = ?";
         String walletQuery = "SELECT * FROM wallets WHERE user_id = ?";
@@ -173,5 +172,31 @@ public class User {
             e.printStackTrace();
         }
         return wallet;
+    }
+    public static void updateUserBalance(String username, double newBalance) {
+        // Kwerenda SQL do zaktualizowania bilansu użytkownika na podstawie jego nazwy użytkownika
+        String updateBalanceSQL = "UPDATE wallets SET balance = ? WHERE user_id = (SELECT id FROM users WHERE username = ?)";
+
+        try (Connection connection = Database.connect()) {
+            // Utwórz PreparedStatement do zaktualizowania balance
+            try (PreparedStatement stmt = connection.prepareStatement(updateBalanceSQL)) {
+                stmt.setDouble(1, newBalance);  // Ustawienie nowej wartości balance
+                stmt.setString(2, username);  // Ustawienie nazwy użytkownika, którego balance chcemy zaktualizować
+
+                int rowsUpdated = stmt.executeUpdate();  // Wykonanie zapytania
+
+                if (rowsUpdated > 0) {
+                    System.out.println("Balance zaktualizowany pomyślnie dla użytkownika: " + username);
+                } else {
+                    System.out.println("Nie znaleziono użytkownika o nazwie: " + username);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();  // Obsługa błędów
+        }
+    }
+
+    public void setWallet(Wallet wallet) {
+        this.wallet = wallet;
     }
 }

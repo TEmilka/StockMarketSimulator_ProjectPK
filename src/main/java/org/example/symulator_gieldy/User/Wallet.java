@@ -68,4 +68,6 @@ public class Wallet {
     public void setAssets(HashMap<Asset, Double> assets) {
         this.assets = assets;
     }
+
+
 }
