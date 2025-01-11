@@ -19,7 +19,6 @@ public class UserValidator {
                     String userName = resultSet.getString("username");
                     String userPassword = resultSet.getString("password");
 
-                    // Zwróć użytkownika, jeśli znaleziono dopasowanie
                     User user = new User(userName, userPassword);
                     return user;
                 }
@@ -27,6 +26,6 @@ public class UserValidator {
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        return null; // Brak użytkownika z takim loginem i hasłem
+        return null;
     }
 }

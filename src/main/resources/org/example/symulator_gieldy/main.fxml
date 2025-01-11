@@ -21,7 +21,7 @@
                </children></AnchorPane>
           <AnchorPane maxWidth="880.0" minHeight="0.0" minWidth="0.0">
                <children>
-                  <LineChart fx:id="lineChart" layoutX="109.0" layoutY="83.0" prefHeight="477.0" prefWidth="662.0" style="-fx-background-color: rgba(202,187,187,0.58);">
+                  <LineChart fx:id="lineChart" layoutX="109.0" layoutY="83.0" legendVisible="false" prefHeight="477.0" prefWidth="662.0" style="-fx-background-color: rgba(202,187,187,0.58);">
                     <xAxis>
                       <CategoryAxis side="BOTTOM" />
                     </xAxis>
@@ -29,14 +29,14 @@
                       <NumberAxis side="LEFT" />
                     </yAxis>
                   </LineChart>
-                  <Button layoutX="14.0" layoutY="217.0" mnemonicParsing="false" prefHeight="28.0" prefWidth="81.0" style="-fx-background-color: #ffcccc; -fx-border-radius: 10; -fx-background-radius: 10; -fx-border-color: #ff99cc;" text="Sell" textFill="#996699">
+                  <Button layoutX="14.0" layoutY="234.0" mnemonicParsing="false" prefHeight="28.0" prefWidth="81.0" onAction="#handleSell" style="-fx-background-color: #ffcccc; -fx-border-radius: 10; -fx-background-radius: 10; -fx-border-color: #ff99cc;" text="Sell" textFill="#996699">
                      <font>
                         <Font name="Fira Code Retina" size="13.0" />
                      </font>
                      <cursor>
                         <Cursor fx:constant="HAND" />
                      </cursor></Button>
-                  <Button layoutX="14.0" layoutY="355.0" mnemonicParsing="false" prefHeight="28.0" prefWidth="81.0" style="-fx-background-color: #ffcccc; -fx-border-radius: 10; -fx-background-radius: 10; -fx-border-color: #ff99cc;" text="Buy" textFill="#996699">
+                  <Button layoutX="15.0" layoutY="371.0" mnemonicParsing="false" onAction="#handleBuy" prefHeight="28.0" prefWidth="81.0" style="-fx-background-color: #ffcccc; -fx-border-radius: 10; -fx-background-radius: 10; -fx-border-color: #ff99cc;" text="Buy" textFill="#996699">
                      <font>
                         <Font name="Fira Code Retina" size="13.0" />
                      </font>
@@ -56,9 +56,9 @@
                         <Font name="Fira Code Retina" size="13.0" />
                      </font></Label>
                   <Label fx:id="assetName" layoutX="239.0" layoutY="571.0" prefHeight="19.0" prefWidth="218.0" style="-fx-background-color: #ffcccc; -fx-background-radius: 5; -fx-border-color: #ff99cc; -fx-border-radius: 5;" text="Name" textFill="#996699" />
-                  <Label fx:id="quantity" layoutX="483.0" layoutY="571.0" prefHeight="19.0" prefWidth="97.0" style="-fx-background-color: #ffcccc; -fx-background-radius: 5; -fx-border-color: #ff99cc; -fx-border-radius: 5;" text="Amount:" textFill="#996699" />
-                  <TextField layoutX="30.0" layoutY="186.0" prefHeight="25.0" prefWidth="50.0" />
-                  <TextField layoutX="30.0" layoutY="322.0" prefHeight="25.0" prefWidth="50.0" />
+                  <Label fx:id="quantity" layoutX="483.0" layoutY="571.0" prefHeight="19.0" prefWidth="180.0" style="-fx-background-color: #ffcccc; -fx-background-radius: 5; -fx-border-color: #ff99cc; -fx-border-radius: 5;" text="Amount:" textFill="#996699" />
+                  <TextField fx:id="amountToSell" layoutX="26.0" layoutY="191.0" prefHeight="25.0" prefWidth="60.0" promptText="Amount" />
+                  <TextField fx:id="amountToBuy" layoutX="26.0" layoutY="322.0" prefHeight="25.0" prefWidth="57.0" promptText="Amount" />
                   <Button layoutX="767.0" layoutY="24.0" mnemonicParsing="false" onAction="#handleLogOut" prefHeight="34.0" prefWidth="75.0" style="-fx-background-color: #ffcccc; -fx-background-radius: 15; -fx-border-color: #ff99cc; -fx-border-radius: 15;" text="Log out" textFill="#996699">
                      <cursor>
                         <Cursor fx:constant="HAND" />
@@ -87,6 +87,8 @@
                         <PasswordField fx:id="passwordToCharge" layoutX="68.0" layoutY="143.0" promptText="Password" />
                      </children>
                   </Pane>
+                  <Label fx:id="cost" layoutX="41.0" layoutY="347.0" text="Cost" />
+                  <Label fx:id="valueToCharge" layoutX="39.0" layoutY="216.0" text="Value" />
                </children></AnchorPane>
         </items>
       </SplitPane>

@@ -35,7 +35,6 @@ public class DatabaseInitializer {
                 );
                 """;
 
-        // Tabela aktywów użytkownika
         String createUserAssetsTable = """
                 CREATE TABLE IF NOT EXISTS user_assets (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -47,9 +46,6 @@ public class DatabaseInitializer {
                 );
                 """;
 
-
-
-        // Tabela historii cen aktywów rynku
         String createAssetPricesTable = """
                 CREATE TABLE IF NOT EXISTS asset_prices (
                     price_id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -62,8 +58,6 @@ public class DatabaseInitializer {
 
         try (Connection connection = Database.connect();
              Statement statement = connection.createStatement()) {
-
-            // Tworzenie tabel
             statement.execute(createUsersTable);
             statement.execute(createWalletsTable);
             statement.execute(createMarketAssetsTable);

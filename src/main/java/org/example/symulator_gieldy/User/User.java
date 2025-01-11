@@ -27,29 +27,27 @@ public class User {
         return password;
     }
 
+    //Database
     public static void saveUser(User user) {
         String insertUserSQL = "INSERT INTO users (username, password) VALUES (?, ?)";
         String insertWalletSQL = "INSERT INTO wallets (user_id, balance, profit, value) VALUES (?, ?, ?, ?)";
-        String insertAssetSQL = "INSERT INTO assets (wallet_id, symbol, name, price, isin) VALUES (?, ?, ?, ?, ?)";
+        String insertAssetSQL = "INSERT INTO user_assets (wallet_id, symbol, name, price, isin) VALUES (?, ?, ?, ?, ?)";
         String lastInsertRowIdSQL = "SELECT last_insert_rowid()";
 
         try (Connection connection = Database.connect()) {
-            connection.setAutoCommit(false); // Rozpocznij transakcję
+            connection.setAutoCommit(false);
 
-            // Zapisz użytkownika
             try (PreparedStatement userStmt = connection.prepareStatement(insertUserSQL)) {
                 userStmt.setString(1, user.getUsername());
                 userStmt.setString(2, user.getPassword());
                 userStmt.executeUpdate();
 
-                // Pobierz ID wstawionego użytkownika
                 int userId = -1;
                 try (Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(lastInsertRowIdSQL)) {
                     if (rs.next()) {
                         userId = rs.getInt(1);
                     }
                 }
-                // Zapisz portfel użytkownika
                 try (PreparedStatement walletStmt = connection.prepareStatement(insertWalletSQL)) {
                     walletStmt.setInt(1, userId);
                     walletStmt.setDouble(2, user.getWallet().getBalance());
@@ -57,22 +55,18 @@ public class User {
                     walletStmt.setDouble(4, user.getWallet().getValue());
                     walletStmt.executeUpdate();
 
-                    // Pobierz ID wstawionego portfela
                     int walletId = -1;
                     try (Statement stmt = connection.createStatement(); ResultSet rs = stmt.executeQuery(lastInsertRowIdSQL)) {
                         if (rs.next()) {
                             walletId = rs.getInt(1);
                         }
                     }
-                    // Zapisz aktywa powiązane z portfelem
                     for (Asset asset : user.getWallet().getAssets().keySet()) {
                         double quantity = user.getWallet().getAssets().get(asset);
-
                         int assetId = getMarketAssetId(connection, asset.getIsin());
                         if (assetId == -1) {
                             throw new SQLException("Nie znaleziono aktywa na rynku: " + asset.getName());
                         }
-
                         try (PreparedStatement assetStmt = connection.prepareStatement(insertAssetSQL)) {
                             assetStmt.setInt(1, walletId);
                             assetStmt.setInt(2, assetId);
@@ -82,8 +76,7 @@ public class User {
                     }
                 }
             }
-
-            connection.commit(); // Zakończ transakcję
+            connection.commit();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -98,7 +91,7 @@ public class User {
                 }
             }
         }
-        return -1; // Aktywo nie istnieje
+        return -1;
     }
     public static Wallet getUserWallet(String username) {
         String userQuery = "SELECT id FROM users WHERE username = ?";
@@ -110,9 +103,7 @@ public class User {
                 WHERE ua.wallet_id = ?""";
 
         Wallet wallet = null;
-
         try (Connection connection = Database.connect()) {
-            // Pobierz ID użytkownika
             int userId;
             try (PreparedStatement userStmt = connection.prepareStatement(userQuery)) {
                 userStmt.setString(1, username);
@@ -120,12 +111,11 @@ public class User {
                     if (rs.next()) {
                         userId = rs.getInt("id");
                     } else {
-                        return null; // Użytkownik nie istnieje
+                        return null;
                     }
                 }
             }
 
-            // Pobierz portfel użytkownika
             int walletId;
             try (PreparedStatement walletStmt = connection.prepareStatement(walletQuery)) {
                 walletStmt.setInt(1, userId);
@@ -140,12 +130,11 @@ public class User {
                         wallet.setProfit(profit);
                         wallet.setValue(value);
                     } else {
-                        return null; // Portfel nie istnieje
+                        return null;
                     }
                 }
             }
 
-            // Pobierz aktywa użytkownika
             try (PreparedStatement assetStmt = connection.prepareStatement(assetQuery)) {
                 assetStmt.setInt(1, walletId);
                 try (ResultSet rs = assetStmt.executeQuery()) {
@@ -174,17 +163,14 @@ public class User {
         return wallet;
     }
     public static void updateUserBalance(String username, double newBalance) {
-        // Kwerenda SQL do zaktualizowania bilansu użytkownika na podstawie jego nazwy użytkownika
         String updateBalanceSQL = "UPDATE wallets SET balance = ? WHERE user_id = (SELECT id FROM users WHERE username = ?)";
 
         try (Connection connection = Database.connect()) {
-            // Utwórz PreparedStatement do zaktualizowania balance
             try (PreparedStatement stmt = connection.prepareStatement(updateBalanceSQL)) {
-                stmt.setDouble(1, newBalance);  // Ustawienie nowej wartości balance
-                stmt.setString(2, username);  // Ustawienie nazwy użytkownika, którego balance chcemy zaktualizować
+                stmt.setDouble(1, newBalance);
+                stmt.setString(2, username);
 
-                int rowsUpdated = stmt.executeUpdate();  // Wykonanie zapytania
-
+                int rowsUpdated = stmt.executeUpdate();
                 if (rowsUpdated > 0) {
                     System.out.println("Balance zaktualizowany pomyślnie dla użytkownika: " + username);
                 } else {
@@ -192,11 +178,208 @@ public class User {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();  // Obsługa błędów
+            e.printStackTrace();
+        }
+    }
+    public static void buyAsset(String username, Asset asset, double quantity) {
+        String userQuery = "SELECT id FROM users WHERE username = ?";
+        String walletQuery = "SELECT wallet_id FROM wallets WHERE user_id = ?";
+        String assetQuery = "SELECT asset_id FROM market_assets WHERE name = ?"; // Wyszukiwanie po nazwie
+        String userAssetsQuery = "SELECT quantity FROM user_assets WHERE wallet_id = ? AND asset_id = ?";
+        String insertUserAssetQuery = "INSERT INTO user_assets (wallet_id, asset_id, quantity) VALUES (?, ?, ?)";
+        String updateUserAssetQuery = "UPDATE user_assets SET quantity = quantity + ? WHERE wallet_id = ? AND asset_id = ?";
+
+        try (Connection connection = Database.connect()) {
+            int userId;
+            try (PreparedStatement userStmt = connection.prepareStatement(userQuery)) {
+                userStmt.setString(1, username);
+                try (ResultSet rs = userStmt.executeQuery()) {
+                    if (rs.next()) {
+                        userId = rs.getInt("id");
+                    } else {
+                        System.out.println("Nie znaleziono użytkownika o nazwie: " + username);
+                        return;
+                    }
+                }
+            }
+            int walletId;
+            try (PreparedStatement walletStmt = connection.prepareStatement(walletQuery)) {
+                walletStmt.setInt(1, userId);
+                try (ResultSet rs = walletStmt.executeQuery()) {
+                    if (rs.next()) {
+                        walletId = rs.getInt("wallet_id");
+                    } else {
+                        System.out.println("Portfel użytkownika nie istnieje.");
+                        return;
+                    }
+                }
+            }
+            int assetId;
+            try (PreparedStatement assetStmt = connection.prepareStatement(assetQuery)) {
+                assetStmt.setString(1, asset.getName());
+                try (ResultSet rs = assetStmt.executeQuery()) {
+                    if (rs.next()) {
+                        assetId = rs.getInt("asset_id");
+                    } else {
+                        System.out.println("Aktywo nie istnieje w rynku.");
+                        return;
+                    }
+                }
+            }
+            double existingQuantity = 0;
+            try (PreparedStatement userAssetsStmt = connection.prepareStatement(userAssetsQuery)) {
+                userAssetsStmt.setInt(1, walletId);
+                userAssetsStmt.setInt(2, assetId);
+                try (ResultSet rs = userAssetsStmt.executeQuery()) {
+                    if (rs.next()) {
+                        existingQuantity = rs.getDouble("quantity");
+                    }
+                }
+            }
+
+            if (existingQuantity > 0) {
+                try (PreparedStatement updateStmt = connection.prepareStatement(updateUserAssetQuery)) {
+                    updateStmt.setDouble(1, quantity);
+                    updateStmt.setInt(2, walletId);
+                    updateStmt.setInt(3, assetId);
+                    updateStmt.executeUpdate();
+                }
+            } else {
+                try (PreparedStatement insertStmt = connection.prepareStatement(insertUserAssetQuery)) {
+                    insertStmt.setInt(1, walletId);
+                    insertStmt.setInt(2, assetId);
+                    insertStmt.setDouble(3, quantity);
+                    insertStmt.executeUpdate();
+                }
+            }
+            Wallet wallet = getUserWallet(username);
+            wallet.addAsset(asset, quantity);
+
+            System.out.println("Zakupiono " + quantity + " sztuk " + asset.getName());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    public static void sellAsset(String username, Asset asset, double quantity) {
+        String userQuery = "SELECT id FROM users WHERE username = ?";
+        String walletQuery = "SELECT wallet_id FROM wallets WHERE user_id = ?";
+        String assetQuery = "SELECT asset_id FROM market_assets WHERE name = ?"; // Wyszukiwanie po nazwie
+        String userAssetsQuery = "SELECT quantity FROM user_assets WHERE wallet_id = ? AND asset_id = ?";
+        String updateUserAssetQuery = "UPDATE user_assets SET quantity = quantity - ? WHERE wallet_id = ? AND asset_id = ?";
+        String deleteUserAssetQuery = "DELETE FROM user_assets WHERE wallet_id = ? AND asset_id = ?";
+
+        try (Connection connection = Database.connect()) {
+            int userId;
+            try (PreparedStatement userStmt = connection.prepareStatement(userQuery)) {
+                userStmt.setString(1, username);
+                try (ResultSet rs = userStmt.executeQuery()) {
+                    if (rs.next()) {
+                        userId = rs.getInt("id");
+                    } else {
+                        System.out.println("Nie znaleziono użytkownika o nazwie: " + username);
+                        return;
+                    }
+                }
+            }
+            int walletId;
+            try (PreparedStatement walletStmt = connection.prepareStatement(walletQuery)) {
+                walletStmt.setInt(1, userId);
+                try (ResultSet rs = walletStmt.executeQuery()) {
+                    if (rs.next()) {
+                        walletId = rs.getInt("wallet_id");
+                    } else {
+                        System.out.println("Portfel użytkownika nie istnieje.");
+                        return;
+                    }
+                }
+            }
+            int assetId;
+            try (PreparedStatement assetStmt = connection.prepareStatement(assetQuery)) {
+                assetStmt.setString(1, asset.getName());
+                try (ResultSet rs = assetStmt.executeQuery()) {
+                    if (rs.next()) {
+                        assetId = rs.getInt("asset_id");
+                    } else {
+                        System.out.println("Aktywo nie istnieje w rynku.");
+                        return;
+                    }
+                }
+            }
+            double existingQuantity = 0;
+            try (PreparedStatement userAssetsStmt = connection.prepareStatement(userAssetsQuery)) {
+                userAssetsStmt.setInt(1, walletId);
+                userAssetsStmt.setInt(2, assetId);
+                try (ResultSet rs = userAssetsStmt.executeQuery()) {
+                    if (rs.next()) {
+                        existingQuantity = rs.getDouble("quantity");
+                    }
+                }
+            }
+            if (existingQuantity < quantity) {
+                System.out.println("Nie masz wystarczającej ilości aktywów do sprzedaży.");
+                return;
+            }
+            if (existingQuantity > quantity) {
+                try (PreparedStatement updateStmt = connection.prepareStatement(updateUserAssetQuery)) {
+                    updateStmt.setDouble(1, quantity);
+                    updateStmt.setInt(2, walletId);
+                    updateStmt.setInt(3, assetId);
+                    updateStmt.executeUpdate();
+                }
+            } else {
+                try (PreparedStatement deleteStmt = connection.prepareStatement(deleteUserAssetQuery)) {
+                    deleteStmt.setInt(1, walletId);
+                    deleteStmt.setInt(2, assetId);
+                    deleteStmt.executeUpdate();
+                }
+            }
+            Wallet wallet = getUserWallet(username);
+            wallet.removeAsset(asset, quantity);
+
+            System.out.println("Sprzedano " + quantity + " sztuk " + asset.getName());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+    public static void updateProfitAndValue(String username, double profit, double value) {
+        String getUserIdQuery = "SELECT id FROM users WHERE username = ?";
+        String updateWalletQuery = "UPDATE wallets SET profit = ?, value = ? WHERE user_id = ?";
+
+        try (Connection connection = Database.connect()) {
+            int userId = -1;
+            try (PreparedStatement getUserIdStmt = connection.prepareStatement(getUserIdQuery)) {
+                getUserIdStmt.setString(1, username);
+                try (ResultSet resultSet = getUserIdStmt.executeQuery()) {
+                    if (resultSet.next()) {
+                        userId = resultSet.getInt("id");
+                    } else {
+                        throw new RuntimeException("Nie znaleziono użytkownika o nazwie: " + username);
+                    }
+                }
+            }
+            try (PreparedStatement updateWalletStmt = connection.prepareStatement(updateWalletQuery)) {
+                updateWalletStmt.setDouble(1, profit);
+                updateWalletStmt.setDouble(2, value);
+                updateWalletStmt.setInt(3, userId);
+
+                int rowsUpdated = updateWalletStmt.executeUpdate();
+                if (rowsUpdated > 0) {
+                    System.out.println("Zaktualizowano profit i value dla użytkownika: " + username);
+                } else {
+                    System.out.println("Nie znaleziono portfela dla użytkownika o ID: " + userId);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Nie udało się zaktualizować profitu i value w bazie danych.");
         }
     }
 
+    //Other
     public void setWallet(Wallet wallet) {
         this.wallet = wallet;
     }
+
+
+
 }

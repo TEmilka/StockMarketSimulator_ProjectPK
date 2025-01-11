@@ -12,6 +12,7 @@ import javafx.stage.Stage;
 import org.example.symulator_gieldy.User.SessionUser;
 import org.example.symulator_gieldy.User.User;
 import org.example.symulator_gieldy.User.UserValidator;
+import org.example.symulator_gieldy.User.Wallet;
 
 import java.io.IOException;
 
@@ -32,11 +33,15 @@ public class LoginController {
             return;
         }
         User user = UserValidator.validateUser(username, password);
+
         if (user == null) {
             alert.setContentText("Podane hasło nie pasuje do żadnego użytkownika!");
             alert.showAndWait();
             return;
         }
+
+        Wallet userWallet = User.getUserWallet(username);
+        user.setWallet(userWallet);
 
         SessionUser.setLoggedInUser(user);
 
@@ -54,7 +59,6 @@ public class LoginController {
             alert.showAndWait();
         }
     }
-
     public void handletoRegister(ActionEvent actionEvent) {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("registration.fxml"));

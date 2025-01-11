@@ -1,14 +1,19 @@
 package org.example.symulator_gieldy.Assets;
 
 public class AssetCrypto extends Asset {
-    AssetState state;
 
     public AssetCrypto(String name, double price,String isin) {
         super(name, price,isin);
         this.symbol = "[CRYPTO]";
-        historyPrices.add(price);
     }
-
+    @Override
+    public double updatePrice() {
+        double volatility = 0.05; // Zmiennosc
+        double drift = 0.0; // Średni roczny wzrost
+        double newPrice = GeometricBrownianMotion.calculate(price, drift, volatility);
+        this.price = newPrice;
+        return newPrice;
+    }
     @Override
     public String toString() {
         return symbol + " " + name  + " " + price;

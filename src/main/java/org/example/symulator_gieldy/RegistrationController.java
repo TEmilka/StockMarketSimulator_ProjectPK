@@ -42,18 +42,15 @@ public class RegistrationController {
             alert.showAndWait();
             return;
         }
-
         User user = new User(username, password1);
 
         try {
             User.saveUser(user);
-
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("login.fxml"));
             Parent root = fxmlLoader.load();
             Stage stage = (Stage) usernameField.getScene().getWindow();
             stage.setScene(new Scene(root));
             stage.show();
-
         } catch (IOException e) {
             e.printStackTrace();
             alert.setAlertType(Alert.AlertType.ERROR);

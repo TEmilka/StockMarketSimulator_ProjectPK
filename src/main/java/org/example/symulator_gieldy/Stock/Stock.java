@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Stock {
-    private static Stock instance;
     ArrayList<Asset> assets;
 
     private Stock() {}
@@ -16,7 +15,6 @@ public class Stock {
     public static Stock getInstance() {
         return StockHolder.INSTANCE;
     }
-
     public void createStock() {
         if(isMarketAssetsEmpty()){
             assets = new ArrayList<>();
@@ -54,13 +52,12 @@ public class Stock {
                     double price = resultSet.getDouble("price");
                     String isin = resultSet.getString("isin");
 
-                    // Tworzymy obiekt Asset na podstawie typu symbolu lub innych danych
                     Asset asset;
-                    if (isin.equals("NONE")) { // Przyjmujemy, że brak ISIN oznacza kryptowalutę
+                    if (isin.equals("NONE")) {
                         asset = new AssetCrypto(name, price, isin);
-                    } else if (isin.startsWith("IE")) { // Przyjmujemy, że ISIN zaczynający się na "IE" to ETF
+                    } else if (isin.startsWith("IE")) {
                         asset = new AssetETF(name, price, isin);
-                    } else { // Domyślnie przyjmujemy, że to akcje
+                    } else {
                         asset = new AssetStocks(name, price, isin);
                     }
                     assets.add(asset);
@@ -71,6 +68,7 @@ public class Stock {
             }
         }
     }
+
     public void saveMarketAssetsToDatabase() {
         String insertMarketAssetSQL = "INSERT INTO market_assets (symbol, name, price, isin) VALUES (?, ?, ?, ?)";
         String insertAssetPriceSQL = "INSERT INTO asset_prices (asset_id, price) VALUES (?, ?)";
@@ -82,67 +80,51 @@ public class Stock {
             connection.setAutoCommit(false);
 
             for (Asset asset : Stock.getInstance().getAssets()) {
-                // Dodajemy aktywa do tabeli market_assets
                 assetStatement.setString(1, asset.getSymbol());
                 assetStatement.setString(2, asset.getName());
                 assetStatement.setDouble(3, asset.getPrice());
                 assetStatement.setString(4, asset.getIsin());
                 assetStatement.executeUpdate();
 
-                // Pobieramy ID ostatnio wstawionego rekordu
                 String selectLastIdSQL = "SELECT last_insert_rowid()";
                 try (Statement stmt = connection.createStatement();
                      ResultSet rs = stmt.executeQuery(selectLastIdSQL)) {
                     if (rs.next()) {
                         int assetId = rs.getInt(1);
-
-                        // Dodajemy cenę aktywa do tabeli asset_prices
                         priceStatement.setInt(1, assetId);
                         priceStatement.setDouble(2, asset.getPrice());
                         priceStatement.executeUpdate();
                     }
                 }
             }
-
             connection.commit();
         } catch (SQLException e) {
             e.printStackTrace();
             throw new RuntimeException("Nie udało się zapisać aktywów rynku i ich cen do bazy danych.");
         }
     }
-    public ArrayList<Asset> getAssets() {
-        return assets;
-    }
-    private static class StockHolder {
-        private static final Stock INSTANCE = new Stock();
-    }
     public static boolean isMarketAssetsEmpty() {
         String query = "SELECT COUNT(*) AS count FROM market_assets";
-
         try (Connection connection = Database.connect();
              Statement statement = connection.createStatement();
              ResultSet resultSet = statement.executeQuery(query)) {
-
             if (resultSet.next()) {
                 int count = resultSet.getInt("count");
-                return count == 0; // Zwracamy true, jeśli tabela jest pusta
+                return count == 0;
             }
         } catch (SQLException e) {
             e.printStackTrace();
             throw new RuntimeException("Nie udało się sprawdzić zawartości tabeli market_assets.");
         }
-
-        return true; // Domyślnie zakładamy, że tabela jest pusta
+        return true;
     }
     public List<PriceHistory> getAssetPriceHistory(Asset asset) {
         List<PriceHistory> priceHistoryList = new ArrayList<>();
-        // Zapytanie szuka teraz po nazwie aktywa
         String query = "SELECT price, timestamp FROM asset_prices WHERE asset_id = (SELECT asset_id FROM market_assets WHERE name = ?) ORDER BY timestamp ASC";
 
         try (Connection connection = Database.connect();
              PreparedStatement statement = connection.prepareStatement(query)) {
 
-            // Używamy nazwy aktywa zamiast symbolu lub ISIN
             statement.setString(1, asset.getName());
 
             try (ResultSet resultSet = statement.executeQuery()) {
@@ -158,5 +140,31 @@ public class Stock {
         }
         return priceHistoryList;
     }
+    public void updateAssetPriceInDatabase(Asset asset) {
+        String updateMarketAssetSQL = "UPDATE market_assets SET price = ? WHERE name = ?";
+        String insertAssetPriceSQL = "INSERT INTO asset_prices (asset_id, price, timestamp) VALUES ((SELECT asset_id FROM market_assets WHERE name = ?), ?, datetime('now'))";
 
+        try (Connection connection = Database.connect();
+             PreparedStatement marketAssetStatement = connection.prepareStatement(updateMarketAssetSQL);
+             PreparedStatement assetPriceStatement = connection.prepareStatement(insertAssetPriceSQL)) {
+
+            marketAssetStatement.setDouble(1, asset.getPrice());
+            marketAssetStatement.setString(2, asset.getName());  // Używamy nazwy aktywa
+            marketAssetStatement.executeUpdate();
+
+            assetPriceStatement.setString(1, asset.getName());  // Używamy nazwy aktywa
+            assetPriceStatement.setDouble(2, asset.getPrice());
+            assetPriceStatement.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Nie udało się zaktualizować ceny aktywa w bazie danych.");
+        }
+    }
+
+    public ArrayList<Asset> getAssets() {
+        return assets;
+    }
+    private static class StockHolder {
+        private static final Stock INSTANCE = new Stock();
+    }
 }

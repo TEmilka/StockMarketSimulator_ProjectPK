@@ -2,12 +2,11 @@ package org.example.symulator_gieldy.User;
 
 import org.example.symulator_gieldy.Assets.Asset;
 
-import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map;
 
 public class Wallet {
     double balance;
-
     HashMap<Asset, Double> assets;
     double profit;
     double value;
@@ -18,56 +17,66 @@ public class Wallet {
         this.profit = 0;
         this.value = 0;
     }
-    public void addBalance(double value){
-        balance += value;
-    }
-
     public double getBalance() {
         return balance;
     }
-
     public void setBalance(double balance) {
         this.balance = balance;
     }
-
     public double getProfit() {
         return profit;
     }
-
     public void setProfit(double profit) {
         this.profit = profit;
     }
-
     public double getValue() {
         return value;
     }
-
     public void setValue(double value) {
         this.value = value;
     }
-
-    // Metoda do dodawania aktywa do portfela
     public void addAsset(Asset asset, double quantity) {
         if (assets.containsKey(asset)) {
-            assets.put(asset, assets.get(asset) + quantity);  // Dodaj ilość, jeśli aktywo już istnieje
+            assets.put(asset, assets.get(asset) + quantity);
         } else {
-            assets.put(asset, quantity);  // Jeśli to nowe aktywo, dodaj do HashMap
+            assets.put(asset, quantity);
         }
     }
+    public void removeAsset(Asset asset, double quantity) {
+        if (assets.containsKey(asset)) {
+            double currentQuantity = assets.get(asset);
+            double newQuantity = currentQuantity - quantity;
 
-    // Metoda do pobierania ilości danego aktywa
-    public double getAssetQuantity(Asset asset) {
-        return assets.getOrDefault(asset, 0.0);  // Zwraca 0, jeśli aktywo nie istnieje
+            if (newQuantity > 0) {
+                assets.put(asset, newQuantity);
+            } else {
+                assets.remove(asset);
+            }
+        } else {
+            System.out.println("Asset not found in the wallet.");
+        }
     }
-
-    // Pobierz listę aktywów
+    public double getAssetQuantity(String assetName) {
+        double quantity = 0;
+        for (Map.Entry<Asset, Double> entry : assets.entrySet()) {
+            Asset asset = entry.getKey();
+            Double quantity1 = entry.getValue();
+            if(asset.getName().equals(assetName)){
+                quantity = quantity1 + quantity;
+            }
+        }
+        return quantity;
+    }
     public HashMap<Asset, Double> getAssets() {
         return assets;
     }
-
-    public void setAssets(HashMap<Asset, Double> assets) {
-        this.assets = assets;
+    @Override
+    public String toString() {
+        return "Wallet{" +
+                "balance=" + balance +
+                ", assets=" + assets.toString() +
+                ", profit=" + profit +
+                ", value=" + value +
+                '}';
     }
-
-
 }
