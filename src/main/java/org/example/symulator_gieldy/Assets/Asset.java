@@ -1,5 +1,7 @@
 package org.example.symulator_gieldy.Assets;
 
+import org.example.symulator_gieldy.Price.PriceContext;
+
 import java.util.Objects;
 
 abstract public class Asset {
@@ -7,11 +9,13 @@ abstract public class Asset {
     String name;
     double price;
     String isin;
+    private PriceContext priceContext;
 
     public Asset(String name, double price,String isin) {
         this.isin = isin;
         this.name = name;
         this.price = price;
+        this.priceContext = new PriceContext();
     }
     public String getSymbol() {
         return symbol;
@@ -35,5 +39,8 @@ abstract public class Asset {
     @Override
     public int hashCode() {
         return Objects.hash(symbol, name, price, isin);
+    }
+    public PriceContext getPriceContext() {
+        return priceContext;
     }
 }

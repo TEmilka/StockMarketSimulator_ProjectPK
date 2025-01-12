@@ -1,34 +1,78 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.*?>
 <?import javafx.scene.control.*?>
+<?import javafx.scene.image.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane prefHeight="400.0" prefWidth="600.0" style="-fx-background-color: #ffe6f2;" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.symulator_gieldy.LoginController">
+<AnchorPane prefHeight="550.0" prefWidth="600.0" style="-fx-background-color: #cccccc;" xmlns="http://javafx.com/javafx/11.0.14-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.example.symulator_gieldy.LoginController">
    <children>
-      <PasswordField fx:id="passwordField" layoutX="161.0" layoutY="192.0" prefHeight="38.0" prefWidth="278.0" promptText="Password" style="-fx-background-color: rgba(255,204,204,0.5); -fx-border-color: #996699;">
-         <font>
-            <Font name="Fira Code Regular" size="16.0" />
-         </font></PasswordField>
-      <Button layoutX="237.0" layoutY="252.0" mnemonicParsing="false" onAction="#handleRegisterButton" prefHeight="27.0" prefWidth="128.0" style="-fx-background-color: #ffcccc; -fx-border-color: #663366; -fx-border-radius: 15; -fx-background-radius: 15;" text="SUBMIT" textFill="#663366">
-         <font>
-            <Font name="Fira Code Retina" size="16.0" />
-         </font></Button>
-      <TextField fx:id="usernameField" layoutX="161.0" layoutY="143.0" prefHeight="38.0" prefWidth="278.0" promptText="Username" style="-fx-background-color: rgba(255,204,204,0.5); -fx-border-color: #996699;">
-         <font>
-            <Font name="Fira Code Retina" size="16.0" />
-         </font></TextField>
-      <Label alignment="BASELINE_CENTER" contentDisplay="TOP" layoutX="178.0" layoutY="54.0" prefHeight="48.0" prefWidth="245.0" style="-fx-background-radius: 15;" text="Log in!" textAlignment="CENTER" textFill="#663366">
-         <font>
-            <Font name="Fira Code Retina" size="27.0" />
-         </font></Label>
-      <Button layoutX="339.0" layoutY="331.0" mnemonicParsing="false" onAction="#handletoRegister" prefHeight="27.0" prefWidth="62.0" style="-fx-background-color: #ffcccc; -fx-background-radius: 15; -fx-border-radius: 15; -fx-border-color: #663366;" text="Sign up" textFill="#663366">
-         <font>
-            <Font size="10.0" />
-         </font></Button>
-      <Label layoutX="178.0" layoutY="336.0" text="Don't have an account yet?" textFill="#663366">
-         <font>
-            <Font name="Fira Code Retina" size="12.0" />
-         </font></Label>
+      <ImageView fitHeight="550.0" fitWidth="600.0" pickOnBounds="true">
+         <image>
+            <Image url="@images/8c0912e9dfb3763a0ec1a6dab627a7d5.jpg" />
+         </image>
+      </ImageView>
+      <Pane layoutX="103.0" layoutY="74.0" prefHeight="400.0" prefWidth="400.0" style="-fx-background-color: rgba(153,204,255,0.62); -fx-background-radius: 20; -fx-border-color: #003366;">
+         <children>
+            <Label alignment="BASELINE_CENTER" contentDisplay="TOP" layoutX="90.0" layoutY="93.0" prefHeight="37.0" prefWidth="156.0" style="-fx-background-radius: 15;" text="Log in!" textAlignment="CENTER">
+               <font>
+                  <Font name="Fira Code Retina" size="27.0" />
+               </font>
+            </Label>
+            <TextField fx:id="usernameField" layoutX="83.0" layoutY="164.0" prefHeight="30.0" prefWidth="280.0" promptText="Username" style="-fx-background-color: #336699; -fx-border-color: #333333;">
+               <font>
+                  <Font name="Fira Code Retina" size="16.0" />
+               </font>
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+            </TextField>
+            <PasswordField fx:id="passwordField" layoutX="83.0" layoutY="210.0" prefHeight="30.0" prefWidth="280.0" promptText="Password" style="-fx-background-color: #336699; -fx-border-color: #333333;">
+               <font>
+                  <Font name="Fira Code Retina" size="16.0" />
+               </font>
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+            </PasswordField>
+            <Button layoutX="158.0" layoutY="265.0" mnemonicParsing="false" onAction="#handleRegisterButton" prefHeight="30.0" prefWidth="130.0" style="-fx-background-color: #99ccff; -fx-border-color: #003366; -fx-border-radius: 15; -fx-background-radius: 15;" text="SUBMIT">
+               <font>
+                  <Font name="Fira Code Retina" size="16.0" />
+               </font>
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+            </Button>
+            <Label layoutX="96.0" layoutY="342.0" text="Don't have an account yet?" textFill="#003366">
+               <font>
+                  <Font name="Fira Code Retina" size="12.0" />
+               </font>
+            </Label>
+            <Button layoutX="282.0" layoutY="337.0" mnemonicParsing="false" onAction="#handletoRegister" prefHeight="27.0" prefWidth="62.0" style="-fx-background-color: #99ccff; -fx-background-radius: 15; -fx-border-radius: 15; -fx-border-color: #003366;" text="Sign up">
+               <font>
+                  <Font name="Fira Code Retina" size="10.0" />
+               </font>
+               <cursor>
+                  <Cursor fx:constant="HAND" />
+               </cursor>
+            </Button>
+            <ImageView fitHeight="60.0" fitWidth="50.0" layoutX="250.0" layoutY="80.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@images/trend.png" />
+               </image>
+            </ImageView>
+            <ImageView fitHeight="30.0" fitWidth="25.0" layoutX="47.0" layoutY="168.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@images/user.png" />
+               </image>
+            </ImageView>
+            <ImageView fitHeight="30.0" fitWidth="25.0" layoutX="47.0" layoutY="215.0" pickOnBounds="true" preserveRatio="true">
+               <image>
+                  <Image url="@images/padlock.png" />
+               </image>
+            </ImageView>
+         </children>
+      </Pane>
    </children>
 </AnchorPane>

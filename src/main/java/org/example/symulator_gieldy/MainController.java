@@ -9,8 +9,13 @@ import javafx.scene.Scene;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
+import org.example.symulator_gieldy.Price.PriceContext;
+import org.example.symulator_gieldy.Price.PriceDownState;
+import org.example.symulator_gieldy.Price.PriceUpState;
 import org.example.symulator_gieldy.Stock.PriceHistory;
 import org.example.symulator_gieldy.Stock.Stock;
 import org.example.symulator_gieldy.User.SessionUser;
@@ -21,7 +26,9 @@ import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.util.Duration;
 
+import java.awt.*;
 import java.io.IOException;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -62,6 +69,8 @@ public class MainController {
 
     Alert alert = new Alert(Alert.AlertType.WARNING);
     private boolean isTopUpPaneVisible = false;
+    PriceContext priceContext = new PriceContext();
+
 
     public void initialize() {
         User loggedUser = SessionUser.getLoggedInUser();
@@ -83,30 +92,28 @@ public class MainController {
             if (newValue != null) {
                 updateChart(newValue);
                 assetName.setText(newValue);
-                    double q = loggedUser.getWallet().getAssetQuantity(newValue);
-                    if (q == 0) {
-                        quantity.setText("Owned quantity: 0");
-                    } else {
-                        quantity.setText(String.format("Owned quantity: %.2f", q));
-                    }
+
+                double q = loggedUser.getWallet().getAssetQuantity(newValue);
+                if (q == 0) {
+                    quantity.setText("OWNED: 0");
+                } else {
+                    quantity.setText(String.format("OWNED: %f", q));
+                }
                 updateCost();
                 updateValueToCharge();
             }
         });
+
         amountToBuy.textProperty().addListener((observable, oldValue, newValue) -> {
             updateCost();
         });
         amountToSell.textProperty().addListener((observable, oldValue, newValue) -> {
             updateValueToCharge();
         });
-        assetsListView.getItems().clear(); // Clear any previous items
-        for (Asset asset : assets) {
-            if (!assetsListView.getItems().contains(asset.toString())) {
-                assetsListView.getItems().add(asset.toString());
-            }
-        }
+        updateListView();
         startPriceUpdates();
     }
+
     private void updateChart(String selectedAsset) {
         Asset selectedAssetObj = null;
         for (Asset asset : Stock.getInstance().getAssets()) {
@@ -119,31 +126,43 @@ public class MainController {
             List<PriceHistory> priceHistory = Stock.getInstance().getAssetPriceHistory(selectedAssetObj);
             XYChart.Series<String, Number> series = new XYChart.Series<>();
             series.setName(selectedAsset);
+
             for (PriceHistory priceHistoryEntry : priceHistory) {
-                series.getData().add(new XYChart.Data<>(priceHistoryEntry.getTimestamp(), priceHistoryEntry.getPrice()));
+                String timestamp = priceHistoryEntry.getTimestamp();
+                String timePart = timestamp.split(" ")[1];
+
+                series.getData().add(new XYChart.Data<>(timePart, priceHistoryEntry.getPrice()));
             }
             lineChart.getData().clear();
             lineChart.getData().add(series);
+            Node line = series.getNode().lookup(".chart-series-line");
+            if (line != null) {
+                String color = toCssColor(selectedAssetObj.getPriceContext().getColor());
+                line.setStyle("-fx-stroke: " + color + ";");
+            }
+
             series.getData().forEach(data -> {
                 data.setNode(null);
             });
         }
     }
+
     public void showTopUp(ActionEvent actionEvent) {
         isTopUpPaneVisible = !isTopUpPaneVisible;
         topUpPane.setVisible(isTopUpPaneVisible);
     }
+
     public void handleCharge(ActionEvent actionEvent) {
         String amount = amountToCharge.getText();
         String password = passwordToCharge.getText();
         User loggedUser = SessionUser.getLoggedInUser();
 
-        if(!loggedUser.getPassword().equals(password)){
+        if (!loggedUser.getPassword().equals(password)) {
             alert.setContentText("Incorrect password!");
             alert.showAndWait();
             return;
         }
-        if(amount.isEmpty()){
+        if (amount.isEmpty()) {
             alert.setContentText("This field can't be empty!");
             alert.showAndWait();
             return;
@@ -157,16 +176,25 @@ public class MainController {
         passwordToCharge.clear();
 
     }
+
     private void startPriceUpdates() {
         Timeline priceUpdateTimeline = new Timeline(new KeyFrame(Duration.seconds(5), event -> {
             for (Asset asset : Stock.getInstance().getAssets()) {
+                double oldPrice = asset.getPrice();
                 asset.updatePrice();
+                double newPrice = asset.getPrice();
+                if (oldPrice > newPrice) {
+                    asset.getPriceContext().setState(new PriceDownState());
+                } else {
+                    asset.getPriceContext().setState(new PriceUpState());
+                }
                 Stock.getInstance().updateAssetPriceInDatabase(asset);
             }
             String selectedAsset = assetsChoiceBox.getValue();
             if (selectedAsset != null) {
                 updateChart(selectedAsset);
             }
+            updateListView();
             updateProfit();
             updateValueToCharge();
             updateCost();
@@ -174,6 +202,7 @@ public class MainController {
         priceUpdateTimeline.setCycleCount(Timeline.INDEFINITE);
         priceUpdateTimeline.play();
     }
+
     public void handleBuy(ActionEvent actionEvent) {
         User loggedUser = SessionUser.getLoggedInUser();
         String costText = cost.getText();
@@ -194,16 +223,16 @@ public class MainController {
 
                 for (Asset asset : Stock.getInstance().getAssets()) {
                     if (asset.getName().equals(assetNameToBuy)) {
-                        if(asset instanceof AssetCrypto){
-                            AssetCrypto crypto = new AssetCrypto(asset.getName(),asset.getPrice(),asset.getIsin());
+                        if (asset instanceof AssetCrypto) {
+                            AssetCrypto crypto = new AssetCrypto(asset.getName(), asset.getPrice(), asset.getIsin());
                             User.buyAsset(loggedUser.getUsername(), crypto, amount);
                             loggedUser.getWallet().addAsset(crypto, amount);
-                        } else if (asset instanceof AssetETF){
-                            AssetETF etf = new AssetETF(asset.getName(),asset.getPrice(),asset.getIsin());
+                        } else if (asset instanceof AssetETF) {
+                            AssetETF etf = new AssetETF(asset.getName(), asset.getPrice(), asset.getIsin());
                             User.buyAsset(loggedUser.getUsername(), etf, amount);
                             loggedUser.getWallet().addAsset(etf, amount);
-                        } else{
-                            AssetStocks stock = new AssetStocks(asset.getName(),asset.getPrice(),asset.getIsin());
+                        } else {
+                            AssetStocks stock = new AssetStocks(asset.getName(), asset.getPrice(), asset.getIsin());
                             User.buyAsset(loggedUser.getUsername(), stock, amount);
                             loggedUser.getWallet().addAsset(stock, amount);
                         }
@@ -211,12 +240,12 @@ public class MainController {
                 }
                 double q = loggedUser.getWallet().getAssetQuantity(assetName);  // Używamy obiektu Asset
                 if (q == 0) {
-                    quantity.setText("Owned quantity: 0");
+                    quantity.setText("OWNED: 0");
                 } else {
-                    quantity.setText(String.format("Owned quantity: %.2f", q));  // Poprawne formatowanie
+                    quantity.setText(String.format("OWNED: %f", q));  // Poprawne formatowanie
                 }
                 updateProfit();
-            } else{
+            } else {
                 alert.setContentText("You don't have enough money!");
                 alert.showAndWait();
                 return;
@@ -226,6 +255,7 @@ public class MainController {
             alert.showAndWait();
         }
     }
+
     private void updateCost() {
         String amountText = amountToBuy.getText();
         String assetNameToBuy = assetsChoiceBox.getValue();
@@ -248,6 +278,7 @@ public class MainController {
             cost.setText("Cost: Invalid input");
         }
     }
+
     public void updateProfit() {
         User loggedUser = SessionUser.getLoggedInUser();
         HashMap<Asset, Double> loggedUserAssets = loggedUser.getWallet().getAssets();
@@ -260,7 +291,7 @@ public class MainController {
             Asset asset = entry.getKey();
             Double quantity1 = entry.getValue();
             loggedUserAccountValue += asset.getPrice() * quantity1;
-            for(Asset asset1 : Stock.getInstance().getAssets()) {
+            for (Asset asset1 : Stock.getInstance().getAssets()) {
                 if (asset1.getName().equals(asset.getName())) {
                     currentMarketValue += asset1.getPrice() * quantity1;
                 }
@@ -270,12 +301,13 @@ public class MainController {
         loggedUser.getWallet().setProfit(loggedUserProfit);
         loggedUser.getWallet().setValue(currentMarketValue);
 
-        User.updateProfitAndValue(loggedUser.getUsername(),loggedUserProfit,currentMarketValue);
+        User.updateProfitAndValue(loggedUser.getUsername(), loggedUserProfit, currentMarketValue);
 
         Profit.setText(String.format("Profit: %.2f", loggedUserProfit));
         Value.setText(String.format("Value: %.2f", currentMarketValue));
     }
-    public void updateValueToCharge(){
+
+    public void updateValueToCharge() {
         String amountText = amountToSell.getText();
         String assetNameToSell = assetsChoiceBox.getValue();
 
@@ -298,6 +330,7 @@ public class MainController {
             valueToCharge.setText("Cost: Invalid input");
         }
     }
+
     public void handleSell(ActionEvent actionEvent) {
         User loggedUser = SessionUser.getLoggedInUser();
         String valueToChargeText = valueToCharge.getText();
@@ -340,12 +373,12 @@ public class MainController {
                 }
                 double q = loggedUser.getWallet().getAssetQuantity(assetName);
                 if (q == 0) {
-                    quantity.setText("Owned quantity: 0");
+                    quantity.setText("OWNED: 0");
                 } else {
-                    quantity.setText(String.format("Owned quantity: %.2f", q));
+                    quantity.setText(String.format("OWNED: %f", q));
                 }
                 updateProfit();
-            } else{
+            } else {
                 alert.setContentText("You don't have enough quantities to sell this asset");
                 alert.showAndWait();
                 return;
@@ -356,6 +389,7 @@ public class MainController {
             alert.showAndWait();
         }
     }
+
     public void handleLogOut(ActionEvent actionEvent) {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("login.fxml"));
@@ -376,4 +410,47 @@ public class MainController {
             alert.showAndWait();
         }
     }
+
+    private String toCssColor(Color color) {
+        int red = (int) (color.getRed() * 255);
+        int green = (int) (color.getGreen() * 255);
+        int blue = (int) (color.getBlue() * 255);
+        return String.format("rgb(%d, %d, %d)", red, green, blue);
+    }
+
+    private void updateListView() {
+
+        assetsListView.getItems().clear(); // Wyczyść istniejące elementy
+        assetsListView.setStyle("-fx-background-color: rgba(153, 204, 255, 0.62); -fx-border-color: #336699;");
+
+        for (Asset asset : Stock.getInstance().getAssets()) {
+            assetsListView.getItems().add(asset.toString());
+        }
+        assetsListView.setCellFactory(listView -> new ListCell<>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+
+                if (empty || item == null) {
+                    setText(null);
+                    setStyle("");
+                } else {
+                    setText(item);
+                    Asset asset = Stock.getInstance().getAssets().stream()
+                            .filter(a -> a.toString().equals(item))
+                            .findFirst()
+                            .orElse(null);
+
+                    if (asset != null) {
+                        String color = toCssColor(asset.getPriceContext().getColor());
+                        setStyle("-fx-text-fill: " + color + ";");
+                        setStyle("-fx-background-color: " + "rgba(86,89,106,0.45)" + "; -fx-text-fill: " + color + ";");
+                    } else {
+                        setStyle("-fx-text-fill: black;"); // Domyślny kolor
+                    }
+                }
+            }
+        });
+    }
+
 }

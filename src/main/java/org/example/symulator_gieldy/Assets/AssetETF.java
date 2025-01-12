@@ -18,7 +18,8 @@ public class AssetETF extends Asset {
 
     @Override
     public String toString() {
-        return symbol + " " + name  + " " + price + '\n' +  "ISIN: " + isin;
+        return String.format("%s %s  PRICE: %.2f\nISIN: %s", symbol, name, price, isin);
+        //return symbol + " " + name  + " " + price + '\n' +  "ISIN: " + isin;
     }
 
 }

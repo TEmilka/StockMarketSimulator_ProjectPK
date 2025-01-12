@@ -16,6 +16,8 @@ public class AssetCrypto extends Asset {
     }
     @Override
     public String toString() {
-        return symbol + " " + name  + " " + price;
+
+        return String.format("%s %s  PRICE: %.2f", symbol, name, price);
+        //return symbol + " " + name  + " " + price;
     }
 }
