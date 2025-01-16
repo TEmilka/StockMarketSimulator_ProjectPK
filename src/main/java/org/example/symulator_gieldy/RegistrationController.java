@@ -42,6 +42,11 @@ public class RegistrationController {
             alert.showAndWait();
             return;
         }
+        if (User.isUsernameTaken(username)) {
+            alert.setContentText("Nazwa użytkownika jest już zajęta. Wybierz inną.");
+            alert.showAndWait();
+            return;
+        }
         User user = new User(username, password1);
 
         try {
@@ -50,6 +55,7 @@ public class RegistrationController {
             Parent root = fxmlLoader.load();
             Stage stage = (Stage) usernameField.getScene().getWindow();
             stage.setScene(new Scene(root));
+            stage.centerOnScreen();
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();

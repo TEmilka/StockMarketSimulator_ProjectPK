@@ -10,7 +10,7 @@ public class AssetETF extends Asset {
     @Override
     public double updatePrice() {
         double volatility = 0.01; // Zmiennosc
-        double drift = 0.009; // Średni roczny wzrost
+        double drift = 0.004; // Średni wzrost
         double newPrice = GeometricBrownianMotion.calculate(price, drift, volatility);
         this.price = newPrice;
         return newPrice;

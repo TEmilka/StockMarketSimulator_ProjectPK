@@ -29,6 +29,7 @@ import javafx.util.Duration;
 import java.awt.*;
 import java.io.IOException;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -113,7 +114,6 @@ public class MainController {
         updateListView();
         startPriceUpdates();
     }
-
     private void updateChart(String selectedAsset) {
         Asset selectedAssetObj = null;
         for (Asset asset : Stock.getInstance().getAssets()) {
@@ -146,12 +146,10 @@ public class MainController {
             });
         }
     }
-
     public void showTopUp(ActionEvent actionEvent) {
         isTopUpPaneVisible = !isTopUpPaneVisible;
         topUpPane.setVisible(isTopUpPaneVisible);
     }
-
     public void handleCharge(ActionEvent actionEvent) {
         String amount = amountToCharge.getText();
         String password = passwordToCharge.getText();
@@ -176,7 +174,6 @@ public class MainController {
         passwordToCharge.clear();
 
     }
-
     private void startPriceUpdates() {
         Timeline priceUpdateTimeline = new Timeline(new KeyFrame(Duration.seconds(5), event -> {
             for (Asset asset : Stock.getInstance().getAssets()) {
@@ -202,7 +199,6 @@ public class MainController {
         priceUpdateTimeline.setCycleCount(Timeline.INDEFINITE);
         priceUpdateTimeline.play();
     }
-
     public void handleBuy(ActionEvent actionEvent) {
         User loggedUser = SessionUser.getLoggedInUser();
         String costText = cost.getText();
@@ -255,7 +251,6 @@ public class MainController {
             alert.showAndWait();
         }
     }
-
     private void updateCost() {
         String amountText = amountToBuy.getText();
         String assetNameToBuy = assetsChoiceBox.getValue();
@@ -278,26 +273,38 @@ public class MainController {
             cost.setText("Cost: Invalid input");
         }
     }
-
     public void updateProfit() {
+
         User loggedUser = SessionUser.getLoggedInUser();
+        if (loggedUser == null) {
+            return;
+        }
+
         HashMap<Asset, Double> loggedUserAssets = loggedUser.getWallet().getAssets();
 
         double loggedUserAccountValue = 0;
         double currentMarketValue = 0;
-        double loggedUserProfit = loggedUser.getWallet().getProfit();
+        double loggedUserProfit=0;
 
+        HashMap<String,Double> assetsNames = new HashMap<String, Double>();
         for (Map.Entry<Asset, Double> entry : loggedUserAssets.entrySet()) {
             Asset asset = entry.getKey();
             Double quantity1 = entry.getValue();
+            if(!assetsNames.containsKey(asset.getName())) {
+                assetsNames.put(asset.getName(),quantity1);
+            }
             loggedUserAccountValue += asset.getPrice() * quantity1;
+        }
+        for(Map.Entry<String,Double> entry : assetsNames.entrySet()) {
+            String assetName = entry.getKey();
+            Double quantity2 = entry.getValue();
             for (Asset asset1 : Stock.getInstance().getAssets()) {
-                if (asset1.getName().equals(asset.getName())) {
-                    currentMarketValue += asset1.getPrice() * quantity1;
+                if (asset1.getName().equals(assetName)) {
+                    currentMarketValue += asset1.getPrice() * quantity2;
                 }
             }
         }
-        loggedUserProfit += currentMarketValue - loggedUserAccountValue;
+        loggedUserProfit += (currentMarketValue - loggedUserAccountValue);
         loggedUser.getWallet().setProfit(loggedUserProfit);
         loggedUser.getWallet().setValue(currentMarketValue);
 
@@ -306,7 +313,6 @@ public class MainController {
         Profit.setText(String.format("Profit: %.2f", loggedUserProfit));
         Value.setText(String.format("Value: %.2f", currentMarketValue));
     }
-
     public void updateValueToCharge() {
         String amountText = amountToSell.getText();
         String assetNameToSell = assetsChoiceBox.getValue();
@@ -330,7 +336,6 @@ public class MainController {
             valueToCharge.setText("Cost: Invalid input");
         }
     }
-
     public void handleSell(ActionEvent actionEvent) {
         User loggedUser = SessionUser.getLoggedInUser();
         String valueToChargeText = valueToCharge.getText();
@@ -389,13 +394,16 @@ public class MainController {
             alert.showAndWait();
         }
     }
-
     public void handleLogOut(ActionEvent actionEvent) {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("login.fxml"));
             Parent root = fxmlLoader.load();
+            Scene scene = new Scene(root, 800, 600);
             Stage stage = (Stage) ((Node) actionEvent.getSource()).getScene().getWindow();
-            stage.setScene(new Scene(root));
+            stage.setScene(scene);
+            stage.setMaxWidth(600);
+            stage.setMaxHeight(550);
+            stage.centerOnScreen();
             stage.show();
             SessionUser.logout();
         } catch (IOException e) {
@@ -410,14 +418,12 @@ public class MainController {
             alert.showAndWait();
         }
     }
-
     private String toCssColor(Color color) {
         int red = (int) (color.getRed() * 255);
         int green = (int) (color.getGreen() * 255);
         int blue = (int) (color.getBlue() * 255);
         return String.format("rgb(%d, %d, %d)", red, green, blue);
     }
-
     private void updateListView() {
 
         assetsListView.getItems().clear(); // Wyczyść istniejące elementy

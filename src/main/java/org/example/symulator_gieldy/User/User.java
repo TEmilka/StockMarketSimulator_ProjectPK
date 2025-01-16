@@ -374,7 +374,19 @@ public class User {
             throw new RuntimeException("Nie udało się zaktualizować profitu i value w bazie danych.");
         }
     }
-
+    public static boolean isUsernameTaken(String username) {
+        String query = "SELECT 1 FROM users WHERE username = ?";
+        try (Connection connection = Database.connect();
+             PreparedStatement stmt = connection.prepareStatement(query)) {
+            stmt.setString(1, username);
+            try (ResultSet rs = stmt.executeQuery()) {
+                return rs.next();
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Błąd podczas sprawdzania dostępności nazwy użytkownika.");
+        }
+    }
     //Other
     public void setWallet(Wallet wallet) {
         this.wallet = wallet;

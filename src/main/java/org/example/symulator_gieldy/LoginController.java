@@ -3,6 +3,7 @@ package org.example.symulator_gieldy;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
@@ -48,9 +49,15 @@ public class LoginController {
         try {
             FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("main.fxml"));
             Parent root = fxmlLoader.load();
-            Stage stage = (Stage) usernameField.getScene().getWindow();
             Scene scene = new Scene(root, 1280, 720);
+            Stage stage = (Stage) ((Node) actionEvent.getSource()).getScene().getWindow();
             stage.setScene(scene);
+            stage.setWidth(1280);
+            stage.setHeight(720);
+            stage.setMaxWidth(Double.MAX_VALUE);
+            stage.setMaxHeight(Double.MAX_VALUE);
+            stage.centerOnScreen();
+            stage.setMaximized(true);
             stage.show();
         } catch (IOException e) {
             e.printStackTrace();

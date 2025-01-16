@@ -10,8 +10,8 @@ public class AssetStocks extends Asset {
     @Override
     public double updatePrice() {
 
-        double volatility = 0.03; // Zmienność
-        double drift = 0.005;     // Średni roczny wzrost
+        double volatility = 0.02; // Zmienność
+        double drift = 0.002;     // Średni wzrost
         double newPrice = GeometricBrownianMotion.calculate(price, drift, volatility);
         this.price = newPrice;
         return newPrice;

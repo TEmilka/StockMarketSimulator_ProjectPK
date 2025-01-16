@@ -9,7 +9,7 @@ public class AssetCrypto extends Asset {
     @Override
     public double updatePrice() {
         double volatility = 0.05; // Zmiennosc
-        double drift = 0.0; // Średni roczny wzrost
+        double drift = 0.0; // Średni wzrost
         double newPrice = GeometricBrownianMotion.calculate(price, drift, volatility);
         this.price = newPrice;
         return newPrice;
